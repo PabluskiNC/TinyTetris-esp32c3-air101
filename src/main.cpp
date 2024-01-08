@@ -10,6 +10,42 @@
 #define fieldx   10   //how many blocks wide (Standard is 10)
 #define fieldy   18  //how many blocks tall (Standard is 20)
 
+//ElegantOTA
+#include <WiFi.h>
+#include <WiFiClient.h>
+#include <WebServer.h>
+#include <ElegantOTA.h>
+
+#include <secrets.h> // wifi creds
+
+WebServer server(80);
+
+unsigned long ota_progress_millis = 0;
+
+void onOTAStart() {
+  // Log when OTA has started
+  Serial.println("OTA update started!");
+  // <Add your own code here>
+}
+
+void onOTAProgress(size_t current, size_t final) {
+  // Log every 1 second
+  if (millis() - ota_progress_millis > 1000) {
+    ota_progress_millis = millis();
+    Serial.printf("OTA Progress Current: %u bytes, Final: %u bytes\n", current, final);
+  }
+}
+
+void onOTAEnd(bool success) {
+  // Log when OTA has finished
+  if (success) {
+    Serial.println("OTA update finished successfully!");
+  } else {
+    Serial.println("There was an error during OTA update!");
+  }
+  // <Add your own code here>
+}
+
 
 
 
@@ -103,6 +139,34 @@ void setup() {
   Serial.println("");
 
   tft.fillScreen(ST77XX_BLACK);
+  
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  Serial.println("");
+
+  // Wait for connection
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.print("Connected to ");
+  Serial.println(ssid);
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  server.on("/", []() {
+    server.send(200, "text/plain", "Hi! This is ElegantOTA Demo.");
+  });
+
+  ElegantOTA.begin(&server);    // Start ElegantOTA
+  // ElegantOTA callbacks
+  ElegantOTA.onStart(onOTAStart);
+  ElegantOTA.onProgress(onOTAProgress);
+  ElegantOTA.onEnd(onOTAEnd);
+
+  server.begin();
+  Serial.println("HTTP server started");
 }
 
 void readInputs() {
@@ -400,6 +464,7 @@ void scoreBoardWrite(int scorez){
 }
 
 void loop(){
+
   speed=250;
   timez=millis();
   score=0;
@@ -408,6 +473,10 @@ void loop(){
   game=1;
   showField(0,fieldy,1);
   while(game){
+    //Serial.println("OTA?");
+    server.handleClient();
+    ElegantOTA.loop();
+    //Serial.println("Done OTA");
     collide=1;
     multiplier=1;
     scoreBoardWrite(score);

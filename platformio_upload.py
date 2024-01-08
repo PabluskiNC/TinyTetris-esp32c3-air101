@@ -1,0 +1,1 @@
+.pio/libdeps/esp32-c3-devkitm-1-WIFI/ElegantOTA/platformio_upload.py
