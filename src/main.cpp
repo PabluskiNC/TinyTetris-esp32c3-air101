@@ -1,9 +1,5 @@
 #include <Arduino.h>
 
-//#include <TFT_eSPI.h> // Graphics and font library for ST7735 driver chip
-//#include <User_Setup.h>
-//#include <SPI.h>
-
 #define offsetx   0   //pixel offset X
 #define offsety  16   //pixel offset Y
 #define blockSize 8   //block size
@@ -11,6 +7,8 @@
 #define fieldy   18  //how many blocks tall (Standard is 20)
 
 //ElegantOTA
+#define UPDATE_DEBUG 1
+#define ELEGANTOTA_DEBUG 1
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WebServer.h>
